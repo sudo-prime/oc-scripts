@@ -34,19 +34,19 @@ local QUADRANT_OFFSET = {
 local tone = {}
 
 function tone.success()
-    computer.beep(440)
-    computer.beep(440)
-    computer.beep(659.25)
+    computer.beep(440, 0.07)
+    computer.beep(440, 0.07)
+    computer.beep(659.25, 0.07)
 end
 
 function tone.progress()
-    computer.beep(440)
+    computer.beep(440, 0.07)
 end
 
 function tone.error()
-    computer.beep(196)
-    computer.beep(196)
-    computer.beep(196)
+    computer.beep(196, 0.07)
+    computer.beep(196, 0.07)
+    computer.beep(196, 0.07)
 end
 
 function coords_equal(coord1, coord2)

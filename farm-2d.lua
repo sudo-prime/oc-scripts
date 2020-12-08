@@ -1,3 +1,34 @@
+--[[
+
+farm-2d.lua
+
+Farms a plot of rectangular land.
+
+REQUIREMENTS:
+1. Geolyzer
+2. Inventory Controller
+3. Speech Upgrade
+
+The robot must be placed one block above the crops,
+on top of a charger, facing the first (upper-most) row of crops.
+
+The robot assumes that the land below them is plantable.
+This allows for growing crops that don't grow on dirt,
+i.e. nether wart. To use this robot, till the land it is
+going to farm, if needed.
+
+By default, the robot farms a 9x9 area consisting of 9 square
+plots. The shape of each plot is always a square. However,
+The farm itself can contain a different number of plots in
+each direction. You can change the plot size and number of
+plots in each direction by modifying PLOT_SCALE, PLOTS_X,
+and PLOTS_Z, respectively.
+
+Written by Nick V.
+
+--]]
+
+
 local robot = require('robot')
 local sides = require('sides')
 local component = require('component')
@@ -7,8 +38,14 @@ local inventory_controller = component.inventory_controller
 local speech_box = component.speech
 
 -- USER CONFIGURATION
-local PLOTS_X = 3
-local PLOTS_Z = 3
+local PLOTS_X = 3   -- Number of plots in the X direction
+local PLOTS_Z = 3   -- Number of plots in the Y direction
+-- Specifies the dimensions of each crop plot.
+-- A PLOT_SCALE * PLOT_SCALE area will be allotted for
+-- each entry in CROP_LIST.
+-- The x and z size of your farm will be this number
+-- multiplied by PLOTS_X and PLOTS_Z, respectively.
+local PLOT_SCALE = 3
 -- List of plantable items for each plot.
 -- Crops are listed in the form of a flattened
 -- 2d list, left-to-right followed by top-to-bottom
@@ -26,14 +63,17 @@ local CROP_LIST = {
     'harvestcraft:garlicitem',
     'minecraft:carrot'
 }
-local SLEEP_DURATION = 45   -- Number if seconds the robot will wait
+local PHRASES = {
+    'Step aside please.',
+    'Get out of the way.',
+    'Let me through please.',
+    'You are blocking my path.',
+    'Move out of the fucking way you god damn degenerate moron.',
+    'I will wait. You\'re wasting youre time.'
+}
+local SLEEP_DURATION = 120  -- Number of seconds the robot will wait
                             -- after each harvest.
--- Specifies the dimensions of each crop plot.
--- A PLOT_SCALE * PLOT_SCALE area will be allotted for
--- each entry in CROP_LIST.
--- The x and z size of your farm will be this number
--- multiplied by PLOTS_X and PLOTS_Z, respectively.
-local PLOT_SCALE = 3
+
 -- END USER CONFIGURATION --
 
 
@@ -55,14 +95,7 @@ function tone.error()
     computer.beep(196, 0.07)
 end
 local PHRASE = 1
-local PHRASES = {
-    'Step aside please.',
-    'Get out of the way.',
-    'Let me through please.',
-    'You are blocking my path.',
-    'Move out of the fucking way you god damn degenerate moron.',
-    'I will wait. You\'re wasting youre time.'
-}
+
 
 -- Initialize PLOT_MAP, which maps the robot's current
 -- relative X and Y location to an item id. This id corresponds
