@@ -189,7 +189,6 @@ local function forwardUntilSuccess()
         success = robot.forward()
     end
     PHRASE = 1
-    print('i am free', was_obstructed)
     if was_obstructed then
         speech_box.say('Thank you.')
         os.sleep(3)
