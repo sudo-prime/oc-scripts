@@ -69,7 +69,7 @@ local PHRASES = {
     'Let me through please.',
     'You are blocking my path.',
     'Move out of the fucking way you god damn degenerate moron.',
-    'I will wait. You\'re wasting youre time.'
+    'I will wait. You\'re wasting your time.'
 }
 local SLEEP_DURATION = 120  -- Number of seconds the robot will wait
                             -- after each harvest.
