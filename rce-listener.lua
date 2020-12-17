@@ -1,8 +1,9 @@
 local m = component.proxy(component.list("modem")())
-m.open(2412)
+local PORT = 2412
+m.open(PORT)
 local function respond(...)
     local args = table.pack(...)
-    pcall(function() m.broadcast(2412, table.unpack(args)) end)
+    pcall(function() m.broadcast(PORT, table.unpack(args)) end)
 end
 local function receive()
     while true do
