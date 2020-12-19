@@ -1,0 +1,140 @@
+local fs = require('filesystem')
+
+local function getInt()
+    local inp
+    repeat inp = io.read() until inp:match('^%d+$')
+    return inp
+end
+
+local function getYesOrNo()
+    local inp
+    repeat inp = io.read() until inp:match('^[yn]$')
+    return inp
+end
+
+local function confirm()
+    io.read()
+end
+
+local function findAndReplaceLine(file_path, to_replace, replace_with)
+    local file = io.open(file_path, 'r')
+    local content = {}
+    local success = false
+    for line in file:lines() do
+        if string.find(line, to_replace) ~= nil and not(success) then
+            table.insert(content, replace_with)
+            success = true
+        else
+            table.insert(content, line)
+        end
+    end
+    file:close()
+    file = io.open(file_path, 'w')
+    for _, value in ipairs(content) do
+        file:write(value..'\n')
+    end
+    file:close()
+end
+
+local function appendFileToFile(path1, path2)
+    local append_with = io.open(path1, 'r')
+    local append_to   = io.open(path2, 'a')
+    for line in append_with:lines() do
+        append_to:write(line..'\n')
+    end
+    append_to:close()
+    append_with:close()
+end
+
+local function main()
+    -- Ask user for port
+    print('What port would you like these scripts to communicate on?')
+    local port = getInt()
+
+    print('Would you like to automatically flash reactor-listener.lua to an EEPROM? (y/n)')
+    print('This is required if you want a computer without OpenOS to listen to modem messages.')
+    local flash = getYesOrNo()
+
+    local copy_listener
+    if flash == 'n' then
+        print('Would you like to copy reactor-listener.lua to the home directory instead? (y/n)')
+        print('Otherwise, only the reactor monitor will be installed.')
+        copy_listener = getYesOrNo()
+    else
+        copy_listener = 'n'
+    end
+
+    if not(copy_listener == 'y') and not(flash == 'y') then
+        print('WARNING: You have chosen not to install reactor-listener.lua.')
+        print('In order to use it as it appears on this disk, you MUST change the PORT variable to something other than nil.')
+    end
+
+    if not fs.exists('/etc/rc.d') then
+        print('Error - /etc/rc.d does not exist')
+        return
+    end
+
+    if not fs.exists('/etc/rc.cfg') then
+        print('Error - /etc/rc.cfg does not exist')
+        return
+    end
+
+    print('Copying files...')
+    os.execute('copy '..install.from..'/reactor.lua /etc/rc.d/reactor.lua')
+    os.execute('copy '..install.from..'/reactor.cfg /etc/reactor.cfg')
+    if flash == 'y' then
+        os.execute('copy '..install.from..'/reactor-listener.lua /tmp/reactor-listener.lua')
+        print('Files copied.')
+        print('Configuring scripts...')
+        findAndReplaceLine(
+            '/tmp/reactor-listener.lua',
+            'local PORT = nil',
+            'local PORT = '..port
+        )
+        findAndReplaceLine(
+            '/etc/reactor.cfg',
+            '    port = nil',
+            '    port = '..port
+        )
+        appendFileToFile('/etc/reactor.cfg', '/etc/rc.cfg')
+        os.execute('rm /etc/reactor.cfg')
+        print('Scripts configured.')
+        print('Press enter to flash the currently inserted EEPROM.')
+        confirm()
+        print('Flashing...')
+        os.execute('flash -q /tmp/reactor-listener.lua reactor-listener')
+        os.execute('rm /tmp/reactor-listener.lua')
+        print('Done.')
+    elseif copy_listener == 'y' then
+        os.execute('copy '..install.from..'/reactor-listener.lua /home/reactor-listener.lua')
+        print('Files copied.')
+        print('Configuring scripts...')
+        findAndReplaceLine(
+            '/home/reactor-listener.lua',
+            'local PORT = nil',
+            'local PORT = '..port
+        )
+        findAndReplaceLine(
+            '/etc/reactor.cfg',
+            '    port = nil',
+            '    port = '..port
+        )
+        appendFileToFile('/etc/reactor.cfg', '/etc/rc.cfg')
+        os.execute('rm /etc/reactor.cfg')
+        print('Scripts configured.')
+    else
+        print('Files copied.')
+        print('Configuring scripts...')
+        findAndReplaceLine(
+            '/etc/reactor.cfg',
+            '    port = nil\n',
+            '    port = '..port..'\n'
+        )
+        appendFileToFile('/etc/reactor.cfg', '/etc/rc.cfg')
+        os.execute('rm /etc/reactor.cfg')
+        print('Scripts configured.')
+    end
+    print('Installation complete. To start monitoring your energy device, run \'rc reactor enable\'.')
+end
+
+main()
