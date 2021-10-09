@@ -7,28 +7,14 @@
     robot facing direction and relative position
     with regard to where it was placed.
 
-    COMING SOON:
-    Functionality to record, save, and re-play robot
-    movements.
-    Full documentation.
-
     REQUIREMENTS:
     1. OpenOs
-    2. moves.facing should be changed according to
-    the starting facing direction of the robot. This
-    can be done with moves.init().
-]]--
-
-
---[[
-    Sends modem messages to devices on port PORT,
-    when the given energy device either rises above
-    OFF_THRESHOLD or drops below ON_THRESHOLD, in
-    percentage of max capacity.
-]]--
+]]
 
 local robot = require('robot')
 local copy = require('copy')
+local filesystem = require('filesystem')
+local serialization = require('serialization')
 
 local moves = {}
 
@@ -37,9 +23,6 @@ moves.south = 'SOUTH'
 moves.east  = 'EAST'
 moves.west  = 'WEST'
 
--- You can change the following line to match
--- the initial facing direction of the robot,
--- or use .init().
 moves.facing = moves.north
 
 moves.history180 = '180'
@@ -59,14 +42,9 @@ moves.relativePosition = {x = 0, y = 0, z = 0}
 moves.initialFacing = nil
 
 local function coords_equal(coord1, coord2)
-    return coord1.x == coord2.x and coord1.y == coord2.y and coord1.z == coord2.z
-end
-
-function moves.init(direction, position)
-    moves.facing = direction
-    if position ~= nil then
-        moves.relativePosition = position
-    end
+    return coord1.x == coord2.x
+       and coord1.y == coord2.y
+       and coord1.z == coord2.z
 end
 
 function moves.remember(move)
@@ -158,7 +136,7 @@ end
 
 function moves.rewind(steps)
     moves.memory = false
-    if steps == nil then
+    if steps == nil or steps > #moves.history then
         steps = #moves.history
     end
     for i = 1, steps do
@@ -243,7 +221,7 @@ function moves.forward(dist)
     return true
 end
 
-function moves.back()
+function moves.back(dist)
     if dist == nil then
         dist = 1
     end

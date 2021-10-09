@@ -10,8 +10,12 @@
 
     Sends modem messages to devices on port PORT,
     when the given energy device either rises above
-    OFF_THRESHOLD or drops below ON_THRESHOLD, in
-    percentage of max capacity.
+    off_threshold or drops below on_threshold. 
+    These configuration settings can be found within 
+    the reactor.cfg file and set before installation.
+    Alternatively, the ON_THRESHOLD and OFF_THRESHOLD
+    variables found below can be hard-coded, once again
+    to numbers between 0 and 1 with 1 representing
 ]]--
 
 local event = require('event')

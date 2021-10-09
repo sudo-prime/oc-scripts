@@ -68,7 +68,6 @@ local PHRASES = {
     'Get out of the way.',
     'Let me through please.',
     'You are blocking my path.',
-    'Move out of the fucking way you god damn degenerate moron.',
     'I will wait. You\'re wasting your time.'
 }
 local SLEEP_DURATION = 120  -- Number of seconds the robot will wait
@@ -278,7 +277,7 @@ local function main()
         forwardUntilSuccess()
         robot.turnRight()
         -- Transfer items to the chest
-        assert(transferInventory(sides.bottom), 'No more inventory sapce!')
+        assert(transferInventory(sides.bottom), 'No more inventory space!')
         forwardUntilSuccess()
         robot.turnRight()
         -- At the end of this loop, the robot must be

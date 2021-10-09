@@ -1,0 +1,23 @@
+The files contained within this directory are meant to be downloaded and placed within an OpenComputers floppy disk, with the following structure:
+/ - .install
+  - reactor-listener.lua
+  - reactor.cfg
+  - reactor.lua
+  - README (this file)
+
+Once the directory structure matches, you should be able to install the script via "install <label>" where <label> is the label or directory path of the inserted floppy disk.
+
+Once installation is complete, you should have the following prepared:
+A computer with a
+1. Wireless card of appropriate tier
+2. Attached adapter and power battery / storage unit
+3. Internet card (for downloading the scripts)
+A microcontroller with a
+1. Wireless card of appropriate tier
+2. Redstone card i think
+3. EEPROM with installed reactor-listener.lua script (don't forget before making the microcontroller, this goes inside!)
+
+TODO make the side of the MC which emits redstone configurable via config library
+
+
+

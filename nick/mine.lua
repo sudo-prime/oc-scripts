@@ -9,9 +9,8 @@ local SCAN_PERIOD = 0
 local SCAN_RADIUS = 6
 local MINIMUM_ENERGY_PERCENT = 0.10
 local MINIMUM_DURABILITY_PERCENT = 0.10
-local METAL_THRESHOLD = 2
-local DIAMOND_THRESHOLD = 2.60
-local OBSIDIAN_THRESHOLD = 6
+local METAL_THRESHOLD = 2.5
+local OBSIDIAN_THRESHOLD = 20
 
 local STATE = 'GO_DOWN'
 local FINISHED = false
@@ -27,7 +26,7 @@ local ALL_SIDES = {sides.forward, sides.back, sides.left, sides.right, sides.up,
 local QUADRANT_OFFSET = {
     {x = 0, z = 0},
     {x = -1, z = 0},
-    {x = -1, z = -1}, 
+    {x = -1, z = -1},
     {x = 0, z = -1}
 }
 
@@ -160,6 +159,7 @@ function go_up(history)
         end
         COORDS_RELATIVE_HOME.y = COORDS_RELATIVE_HOME.y + 1
     else
+        print('ERROR: unsuccessful up movement')
         STATE = 'ERROR'
     end
 end
@@ -172,6 +172,7 @@ function go_down(history)
         end
         COORDS_RELATIVE_HOME.y = COORDS_RELATIVE_HOME.y - 1
     else
+        print('ERROR: unsuccessful down movement')
         STATE = 'ERROR'
     end
 end
@@ -192,6 +193,7 @@ function go_forward(history)
             COORDS_RELATIVE_HOME.x = COORDS_RELATIVE_HOME.x + 1
         end
     else
+        print('ERROR: unsuccessful forward movement')
         STATE = 'ERROR'
     end
 end
@@ -212,6 +214,7 @@ function go_back(history)
             COORDS_RELATIVE_HOME.x = COORDS_RELATIVE_HOME.x - 1
         end
     else
+        print('ERROR: unsuccessful back movement')
         STATE = 'ERROR'
     end
 end
@@ -232,6 +235,7 @@ function turn_right(history)
             table.insert(history, 'right')
         end
     else
+        print('ERROR: unsuccessful right turn')
         STATE = 'ERROR'
     end
 end
@@ -252,6 +256,7 @@ function turn_left(history)
             table.insert(history, 'left')
         end
     else
+        print('ERROR: unsuccessful left turn')
         STATE = 'ERROR'
     end
 end
@@ -273,6 +278,7 @@ function turn_around(history)
             table.insert(history, '180')
         end
     else
+        print('ERROR: unsuccessful turn around')
         STATE = 'ERROR'
     end
 end
@@ -294,6 +300,9 @@ function rewind_last_movement()
     elseif last == 'down' then
         go_up()
     else
+        print('ERROR: unsuccessful rewind')
+        print('last move was:')
+        print(last)
         STATE = 'ERROR'
     end
 end
@@ -360,7 +369,7 @@ function update()
         elseif (robot.durability() or 0) < MINIMUM_DURABILITY_PERCENT then
             STATE = 'HALT'
         else
-            os.sleep(30)
+            os.sleep(90)
             STATE = 'GO_DOWN'
             FINISHED = false
         end
@@ -390,7 +399,7 @@ function update()
         FINISHED = true
     elseif STATE == 'RETURN_SHAFT' and #HISTORY == 0 then
         STATE = 'SCANNING'
-    elseif STATE == 'GO_DOWN' and is_bedrock_below() or COORDS_RELATIVE_HOME.y then
+    elseif STATE == 'GO_DOWN' and is_bedrock_below() then
         print('Bedrock below, heading home.')
         FINISHED = true
         HIT_BEDROCK = true
@@ -478,7 +487,7 @@ function do_step()
         local mined_block = false
         for _, side in ipairs(ALL_SIDES) do
             local scan = geolyzer.analyze(side)
-            if scan.hardness > METAL_THRESHOLD then
+            if scan.hardness > METAL_THRESHOLD and scan.hardness < OBSIDIAN_THRESHOLD then
                 mine(side)
                 mined_block = true
                 break
@@ -501,7 +510,6 @@ function main()
     while true do
         update()
         do_step()
-        os.sleep(0.1)
     end
 end
 
